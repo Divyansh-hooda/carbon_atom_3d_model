@@ -86,6 +86,136 @@
                 line-height: 1;
                 margin-bottom: 6px;
             }
+            main{
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 0 24px;
+            }
+            .stage{
+                position: relative;
+                display: flex;
+                justify-content: center;
+                padding: 6vh 0 1vh;
+            }
+            .stage svg{
+                width: min(560px, 90vh);
+                height: auto;
+                overflow: visible;
+                cursor: grab;
+                touch-action: none;
+            }
+            .stage svg.dragging{cursor: grabbing;}
+            .shell-ring{
+                fill: none;
+                stroke: var(--rule);
+                stroke-width: 1;
+                stroke-dasharray: 2 5;
+            }
+            .orbit-group{
+                transform-origin: 300px 300px;
+            }
+            .orbit-1{animation:spin 9s linear infinite;}
+            .orbit-2{animation: spin 16s linear infinite reverse;}
+            .dragging .orbit-1, .dragging .orbit-2{animation-play-state: running;}
+            @keyframes spin{to{transform: rotate(360deg);}}
+
+            .particle{cursor: pointer;}
+            .particle:focus-visible circle{
+                stroke: var(--paper);
+                stroke-width: 2;
+            }
+            .electron circle{
+                fill:var(--eleceton);
+                filter: drop-shadow(0 0 6px var(--diamond));
+            }
+            .nucleon circle{
+                stroke:var(--graphite-0);
+                stroke-width:1.5;
+            }
+            .nucleon.selected circle{
+                stroke:var(--paper);
+                stroke-width:2.5;
+            }
+            .proton circle{ fill:var(--proton); }
+            .neutron circle{ fill:var(--neutron); }
+
+            .label-tip{
+                font-family:'IBM Plex Mono', monospace;
+                font-size:11px;
+                fill:var(--paper-dim);
+                text-anchor:middle;
+            }
+            .hint{
+                text-align:center;
+                font-family:'IBM Plex Mono', monospace;
+                font-size:11px;
+                color:var(--paper-dim);
+                letter-spacing:0.04em;
+                margin:0 0 3vh;
+            }
+            .info-panel{
+                max-width:520px;
+                margin:0 auto 4vh;
+                padding:18px 22px;
+                background:var(--graphite-1);
+                border:1px solid var(--rule);
+                border-left:3px solid var(--electron);
+                min-height:64px;
+                transition:border-color .2s ease;
+            }
+            .info-panel h3{
+                margin:0 0 6px;
+                font-size: 15px;
+                font-family: 'ibm plex mono', monospace;
+                color: var(--paper);
+                letter-spacing: 0.02em;
+            }
+            .info-panel p{
+                margin:0;
+                font-size: 14px;
+                line-height: 1.55;
+                color: var(--paper-dim);
+            }
+
+            .controls{
+                display:flex;
+                justify-content: center;
+                gap:10px;
+                flex-wrap: wrap;
+                margin: 0 0 2.5vh;
+            }
+            .chip{
+                font-family: 'ibm plex mono', monospace;
+                font-size: 12px;
+                letter-spacing: 0.04em;
+                padding: 8px 14px;
+                border-radius: 100px;
+                background: transparent;
+                color: var(--paper-dim);
+                cursor: pointer;
+                transition: all .2s ease;
+            }
+            .chip.active{
+                color: var(--graphite-0);
+                background: var(--eleceton);
+                border-color: var(--electron);
+            }
+            .chip:hover:not(.active){
+                border-color: var(--paper-dim);
+                color: var(--paper);
+            }
+            .chip:disabled{
+                opacity: 0.35;
+                cursor: not-allowed;
+            }
+            .ion-panel{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                margin: 0 0 5vh;
+            }
         </style>
     </head>
 </html>

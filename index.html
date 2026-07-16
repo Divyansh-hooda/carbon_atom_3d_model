@@ -389,6 +389,251 @@
                 </g>
                 </svg>
             </div>
+            <p class="hint">drag to spin the model · click a particle to ispect it · tab + enter also works </p>
+
+            <div class="info-pannel" id="info-pannel" aria-live="polite">
+                <h3 id="info-title">nothing selected yet</h3>
+                <p id="info-desc">Click any proton, neutron, or electron above - or tab to one and press enter - to read what does it do</p>
+            </div>
+            <div class="controls">
+                <button class="chip-active" data-speed="1">normal speed</button>
+                <button class="chip" data-speed="0.25">slow motion</button>
+                <button class="chip" data-speed="3">fast forward</button>
+            </div>
+            <div class="ion-pannel">
+                <button class="ion-btn" id="remove-e" aria-label="remove a valence electron">-</button>
+                <div class="charge-readout">
+                    <span class="charge-val" id="charge-val">0</span>
+                    <span id="change-label">neutral carbon atom</span>
+                </div>
+                <button class="ion-btn" id="add-e" aria-label="add a valence electron">+</button>
+                <button class="ion-reset id="ion-reset">reset to neutral</button>
+            </div>
+            <div class="config-strip" id="config-strip">
+                <span class="seg">1s<sup>2</sup></span>
+                <span class="divider">/</span>
+                <span class="seg">2s<sup>2</sup></span>
+                <span class="divider">/</span>
+                <span class="seg">2p<sup>2</sup></span>
+            </div>
+            <div class="facts">
+                <div class="fact">
+                    <span class="num">01</span>
+                    <h3>nucleus</h3>
+                    <p>Six protons fix its identity as carbon; six neutrons in the most common isotope, carbon-12, bring the mass number to twelve.</p>
+                </div>
+                <div class="fact">
+                    <span class="num">2</span>
+                    <h3>electron shells</h3>
+                    <p>Two electrons fill the inner K shell. The remaining four sit in the outer L shell — never full, always ready to bond.</p>
+                </div>
+                <div class="fact">
+                    <span class="num">3</span>
+                    <h3>valance</h3>
+                    <p>Four outer electrons let carbon form up to four covalent bonds at once, the reason it can build chains, rings, and lattices.</p>
+                </div>
+                <div class="fact">
+                    <span class="num">4</span>
+                    <h3>isotopes</h3>
+                    <p>Carbon-14, with two extra neutrons, decays slowly and predictably — the basis for radiocarbon dating of ancient remains</p>
+                </div>
+            </div>
+            <p class="forms-title">one element, several architectures</p>
+            <div class="forms">
+                <div class="form-card">
+                    <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--diamond)" stroke-width="1.4"><polygon points="32,6 54,24 44,58 20,58 10,24"/><line x1="32" y1="6" x2="32" y2="58"/><line x1="10" y1="24" x2="54" y2="24"/><line x1="20" y1="58" x2="32" y2="24"/><line x1="44" y1="58" x2="32" y2="24"/></g></svg>
+                    <h4>Diamond</h4>
+                    <p>every atom locked to four neighbours in a rigid 3D lattice - the hardest natural material</p>
+                </div>
+                <div class="form-card">
+                    <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--paper-dim)" stroke-width="1.2"><line x1="6" y1="20" x2="58" y2="20"/><line x1="6" y1="32" x2="58" y2="32"/><line x1="6" y1="44" x2="58" y2="44"/></g></svg>
+                    <h4>Graphite</h4>
+                    <p>Flat sheetss of hexagons stacked loosely - layers slide past each other, which is why pencils write</p>
+                </div>
+                <div class="form-card">
+                    <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--electron)" stroke-width="1.4"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="14"/><line x1="10" y1="32" x2="54" y2="32"/><line x1="32" y1="10" x2="32" y2="54"/></g></svg>
+                    <h4>fullerene</h4>
+                    <p>sixty or more atoms curved into a hollow cage, like the panels of a soccer ball.</p>
+                </div>
+                <div class="form-card">
+                    <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--proton)" stroke-width="1.3"><circle cx="20" cy="24" r="4"/><circle cx="38" cy="18" r="3"/><circle cx="44" cy="38" r="4"/><circle cx="24" cy="44" r="3"/><line x1="20" y1="24" x2="38" y2="18"/><line x1="38" y1="18" x2="44" y2="38"/><line x1="44" y1="38" x2="24" y2="44"/><line x1="24" y1="44" x2="20" y2="24"/></g></svg>
+                    <h4>amorphous</h4>
+                    <p>no long-range order at all - soot and charcol, carbon atoms bonded in irregular clusters</p>
+                </div>
+            </div>
         </main>
+        <footer>
+            Bohr model · not to scale · nucleus and shells are illustrative, not proportional
+        </footer>
+        <script>
+            (function(){
+            const NS = "http://www.w3.org/2000/svg";
+            const nucleus = document.getElementById('nucleus');
+            const shell1 = document.getElementById('shell-1');
+            const shell2 = document.getElementById('shell-2');
+            const svg = document.getElementById('atom-svg');
+            const viewport = document.getElementById('viewport-rotate');
+            const infoTitle = document.getElementById('info-title');
+            const infoDesc = document.getElementById('info-desc');
+            const chargeVal = document.getElementById('charge-val');
+            const chargeLabel = document.getElementById('charge-label');
+            const removeBtn = document.getElementById('remove-e');
+            const addBtn = document.getElementById('add-e');
+            const resetBtn = document.getElementById('ion-reset');
+            const configStrip = document.getElementById('config-strip');
+            function el(name, attrs){
+                const n = document.createElementNS(NS, name);
+                for(const k in attrs) n.setAttribute(k, attrs[k]);
+                return n;
+            }
+            const info = {
+                proton: {
+                title: 'Proton · positive charge',
+                desc: 'Carries a positive charge and defines the element. Carbon always has exactly six — change that number and it stops being carbon.'
+                },
+                neutron: {
+                title: 'Neutron · no charge',
+                desc: 'Carries no charge, only mass. Carbon-12 (the common form) has six; carbon-14, used in radiocarbon dating, has eight.'
+                },
+                electronK: {
+                title: 'K-shell electron',
+                desc: 'One of two innermost electrons. This shell is always full for carbon and does not take part in bonding.'
+                },
+                electronL: {
+                title: 'L-shell electron · valence',
+                desc: 'A valence electron — the outer four (when neutral) that carbon shares or transfers to form chemical bonds.'
+                }
+            };
+            function selectParticle(node, key){
+                document.querySelectorAll('.selected').forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                infoTitle.textContent = info[key].title;
+                infoDesc.textContent = info[key].desc;
+            }
+            function makeInteractive(g, key, label){
+                g.setAttribute('tabindex', '0');
+                g.setAttribute('role', 'button');
+                g.setAttribute('aria-label', label);
+                g.addEventListener('click', () => selectParticle(g, key));
+                g.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' || e.key === ' '){
+                    e.preventDefault();
+                    selectParticle(g, key);
+                }
+                });
+            }
+            const nucleons = [];
+            for(let i=0;i<6;i++) nucleons.push('p');
+            for(let i=0;i<6;i++) nucleons.push('n');
+            const positions = [
+                [0,-14],[12,-6],[12,7],[0,15],[-12,7],[-12,-6],
+                [0,0],[9,3],[5,11],[-6,10],[-10,-2],[-3,-9]
+            ];
+            nucleons.forEach((type, i)=>{
+                const [dx,dy] = positions[i];
+                const isP = type === 'p';
+                const g = el('g', {class:'particle nucleon ' + (isP ? 'proton' : 'neutron'), transform:`translate(${dx},${dy})`});
+                const c = el('circle', {cx:0, cy:0, r:9});
+                const label = el('text', {x:0, y:3.2, class:'label-tip', fill:'#141311', style:'font-size:8px; font-weight:600;'});
+                label.textContent = isP ? 'p+' : 'n';
+                g.appendChild(c);
+                g.appendChild(label);
+                nucleus.appendChild(g);
+                makeInteractive(g, isP ? 'proton' : 'neutron', (isP?'Proton':'Neutron') + ' number ' + ((i%6)+1) + ' of 6');
+            });
+            const shellState = { K: 2, L: 4 };
+            function renderShell(group, count, radius, shellKey){
+                group.innerHTML = '';
+                for(let i=0;i<count;i++){
+                const angle = (i / count) * Math.PI * 2;
+                const x = 300 + radius * Math.cos(angle);
+                const y = 300 + radius * Math.sin(angle);
+                const g = el('g', {class:'particle electron', transform:`translate(${x},${y})`});
+                const dot = el('circle', {cx:0, cy:0, r:6});
+                g.appendChild(dot);
+                group.appendChild(g);
+                makeInteractive(g, shellKey === 'K' ? 'electronK' : 'electronL',
+                    (shellKey === 'K' ? 'K-shell' : 'L-shell') + ' electron ' + (i+1) + ' of ' + count);
+                }
+            }
+            function redrawElectrons(){
+                renderShell(shell1, shellState.K, 110, 'K');
+                renderShell(shell2, shellState.L, 200, 'L');
+            }
+            redrawElectrons();
+            function updateIonUI(){
+                const totalElectrons = shellState.K + shellState.L;
+                const charge = 6 - totalElectrons; // protons fixed at 6
+                let sign = charge > 0 ? '+' : (charge < 0 ? '' : '');
+                chargeVal.textContent = charge === 0 ? '0' : (sign + charge);
+                let label;
+                if(charge === 0) label = 'neutral carbon atom';
+                else if(charge > 0) label = 'cation, C' + (charge===1?'':charge) + '+ · ' + charge + ' electron' + (charge>1?'s':'') + ' short';
+                else label = 'anion, C' + (Math.abs(charge)===1?'':Math.abs(charge)) + '− · ' + Math.abs(charge) + ' extra electron' + (Math.abs(charge)>1?'s':'');
+                chargeLabel.textContent = label;
+                removeBtn.disabled = shellState.L <= 0;
+                addBtn.disabled = shellState.L >= 8;
+                if(shellState.L === 4){
+                configStrip.innerHTML = '<span class="seg">1s<sup>2</sup></span><span class="divider">/</span><span class="seg">2s<sup>2</sup></span><span class="divider">/</span><span class="seg">2p<sup>2</sup></span>';
+                } else {
+                configStrip.innerHTML = '<span class="seg">K shell<sup>' + shellState.K + '</sup></span><span class="divider">/</span><span class="seg">L shell<sup>' + shellState.L + '</sup></span>';
+                }
+            }
+            removeBtn.addEventListener('click', () => {
+                if(shellState.L > 0){
+                shellState.L -= 1;
+                redrawElectrons();
+                updateIonUI();
+                }
+            });
+            addBtn.addEventListener('click', () => {
+                if(shellState.L < 8){
+                shellState.L += 1;
+                redrawElectrons();
+                updateIonUI();
+                }
+            });
+            resetBtn.addEventListener('click', () => {
+                shellState.L = 4;
+                redrawElectrons();
+                updateIonUI();
+            });
+            updateIonUI();
+            const chips = document.querySelectorAll('.chip[data-speed]');
+            chips.forEach(chip=>{
+                chip.addEventListener('click', ()=>{
+                chips.forEach(c=>c.classList.remove('active'));
+                chip.classList.add('active');
+                const speed = parseFloat(chip.dataset.speed);
+                shell1.style.animationDuration = (9 / speed) + 's';
+                shell2.style.animationDuration = (16 / speed) + 's';
+                });
+            });
+            let dragging = false;
+            let lastX = 0;
+            let rotation = 0;
+            function pointerDown(e){
+                dragging = true;
+                svg.classList.add('dragging');
+                lastX = e.clientX;
+                svg.setPointerCapture(e.pointerId);
+            }
+            function pointerMove(e){
+                if(!dragging) return;
+                const dx = e.clientX - lastX;
+                lastX = e.clientX;
+                rotation += dx * 0.6;
+                viewport.setAttribute('transform', `rotate(${rotation} 300 300)`);
+            }
+            function pointerUp(e){
+                dragging = false;
+                svg.classList.remove('dragging');
+            }
+            svg.addEventListener('pointerdown', pointerDown);
+            svg.addEventListener('pointermove', pointerMove);
+            svg.addEventListener('pointerup', pointerUp);
+            svg.addEventListener('pointerleave', pointerUp);
+            })();
+            </script>
     </body>
 </html>

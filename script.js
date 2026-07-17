@@ -1,148 +1,305 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
-const camera = new THREE.PerspectiveCamera(
-60,
-window.innerWidth/window.innerHeight,
-0.1,
-1000
-);
-camera.position.set(0,6,18);
-const renderer = new THREE.WebGLRenderer({
-    antialias:true
-});
-renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-document.body.appendChild(renderer.domElement);
-const controls = new OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
-scene.add(new THREE.AmbientLight(0xffffff,1));
-const pointLight = new THREE.PointLight(0xffffff,3);
-pointLight.position.set(10,10,10);
-scene.add(pointLight);
-const starsGeometry = new THREE.BufferGeometry();
-const starVertices = [];
-for(let i=0;i<2500;i++){
-    starVertices.push(
-        (Math.random()-0.5)*300,
-        (Math.random()-0.5)*300,
-        (Math.random()-0.5)*300
-    );
-}
-starsGeometry.setAttribute(
-'position',
-new THREE.Float32BufferAttribute(starVertices,3)
-);
-const stars = new THREE.Points(
-starsGeometry,
-new THREE.PointsMaterial({
-    color:0xffffff,
-    size:0.5
-})
-);
-scene.add(stars);
-function particle(color){
-    const geometry = new THREE.SphereGeometry(.38,32,32);
-    const material = new THREE.MeshStandardMaterial({
-        color,
-        emissive:color,
-        emissiveIntensity:.3,
-        metalness:.2,
-        roughness:.3
-    });
-    return new THREE.Mesh(geometry,material);
-}
-const nucleus = new THREE.Group();
-for(let i=0;i<12;i++){
-    const atom = i<6
-    ? particle(0xff3333)
-    : particle(0x3399ff);
-    atom.position.set(
+(function(){
 
-        (Math.random()-.5)*1.6,
-        (Math.random()-.5)*1.6,
-        (Math.random()-.5)*1.6
+  const NS = "http://www.w3.org/2000/svg";
+  const nucleusGroup = document.getElementById('nucleus');
+  const shell1Group = document.getElementById('shell-1');
+  const shell2Group = document.getElementById('shell-2');
+  const ringK = document.getElementById('ring-k');
+  const ringL = document.getElementById('ring-l');
+  const svg = document.getElementById('atom-svg');
+  const infoTitle = document.getElementById('info-title');
+  const infoDesc = document.getElementById('info-desc');
+  const chargeVal = document.getElementById('charge-val');
+  const chargeLabel = document.getElementById('charge-label');
+  const removeBtn = document.getElementById('remove-e');
+  const addBtn = document.getElementById('add-e');
+  const resetBtn = document.getElementById('ion-reset');
+  const configStrip = document.getElementById('config-strip');
 
-    );
-    nucleus.add(atom);
-}
-scene.add(nucleus);
-function createShell(radius){
-    const curve = new THREE.EllipseCurve(
-        0,
-        0,
-        radius,
-        radius,
-        0,
-        Math.PI*2
-    );
-    const points = curve.getPoints(180);
-    const geometry = new THREE.BufferGeometry().setFromPoints(
-        points.map(p=>new THREE.Vector3(p.x,0,p.y))
-    );
-    const material = new THREE.LineBasicMaterial({
-        color:0xffffff,
-        transparent:true,
-        opacity:.35
+  function el(name, attrs){
+    const n = document.createElementNS(NS, name);
+    for(const k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+
+  const info = {
+    proton: {
+      title: 'Proton · positive charge',
+      desc: 'Carries a positive charge and defines the element. Carbon always has exactly six — change that number and it stops being carbon.'
+    },
+    neutron: {
+      title: 'Neutron · no charge',
+      desc: 'Carries no charge, only mass. Carbon-12 (the common form) has six; carbon-14, used in radiocarbon dating, has eight.'
+    },
+    electronK: {
+      title: 'K-shell electron',
+      desc: 'One of two innermost electrons. This shell is always full for carbon and does not take part in bonding.'
+    },
+    electronL: {
+      title: 'L-shell electron · valence',
+      desc: 'A valence electron — the outer four (when neutral) that carbon shares or transfers to form chemical bonds.'
+    }
+  };
+
+  function selectParticle(node, key){
+    document.querySelectorAll('.selected').forEach(n => n.classList.remove('selected'));
+    node.classList.add('selected');
+    infoTitle.textContent = info[key].title;
+    infoDesc.textContent = info[key].desc;
+  }
+
+  function makeInteractive(g, key, label){
+    g.setAttribute('tabindex', '0');
+    g.setAttribute('role', 'button');
+    g.setAttribute('aria-label', label);
+    g.addEventListener('click', () => selectParticle(g, key));
+    g.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        selectParticle(g, key);
+      }
     });
-    const shell = new THREE.LineLoop(
-        geometry,
-        material
-    );
-    shell.rotation.x = Math.PI/2;
-    scene.add(shell);
-}
-createShell(3);
-createShell(5);
-const electrons = [];
-function createElectron(radius,angle,speed,tilt){
-    const geometry = new THREE.SphereGeometry(.22,32,32);
-    const material = new THREE.MeshStandardMaterial({
-        color:0x00ff55,
-        emissive:0x00ff55,
-        emissiveIntensity:1
+  }
+
+  // ================= 3D engine =================
+  const CENTER = 300;
+  const PERSPECTIVE_D = 480;
+
+  function rotX(p, a){
+    const c = Math.cos(a), s = Math.sin(a);
+    return { x: p.x, y: p.y*c - p.z*s, z: p.y*s + p.z*c };
+  }
+  function rotY(p, a){
+    const c = Math.cos(a), s = Math.sin(a);
+    return { x: p.x*c + p.z*s, y: p.y, z: -p.x*s + p.z*c };
+  }
+  function rotZ(p, a){
+    const c = Math.cos(a), s = Math.sin(a);
+    return { x: p.x*c - p.y*s, y: p.x*s + p.y*c, z: p.z };
+  }
+
+  function project(p){
+    const scale = PERSPECTIVE_D / (PERSPECTIVE_D + p.z);
+    return { x: CENTER + p.x*scale, y: CENTER + p.y*scale, scale };
+  }
+
+  // current view orientation (radians): pitch, yaw, roll
+  const viewRot = { x: -0.35, y: 0.55, z: 0 };
+
+  function toView(p){
+    let q = rotX(p, viewRot.x);
+    q = rotY(q, viewRot.y);
+    q = rotZ(q, viewRot.z);
+    return q;
+  }
+
+  // ---- Nucleus: 12 nucleons packed on a small sphere ----
+  function fibonacciSphere(n, radius){
+    const pts = [];
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    for(let i=0;i<n;i++){
+      const y = 1 - (i/(n-1))*2;
+      const r = Math.sqrt(Math.max(0, 1 - y*y));
+      const theta = golden * i;
+      pts.push({ x: Math.cos(theta)*r*radius, y: y*radius, z: Math.sin(theta)*r*radius });
+    }
+    return pts;
+  }
+  const nucleonBase = fibonacciSphere(12, 15);
+  const nucleonTypes = ['p','p','p','p','p','p','n','n','n','n','n','n'];
+  const packOrder = [0,6,1,7,2,8,3,9,4,10,5,11]; // interleave protons/neutrons visually
+
+  const nucleonEls = [];
+  packOrder.forEach((idx, i) => {
+    const isP = nucleonTypes[idx] === 'p';
+    const g = el('g', { class: 'particle nucleon ' + (isP ? 'proton' : 'neutron') });
+    const c = el('circle', { cx: 0, cy: 0, r: 9 });
+    const label = el('text', { x: 0, y: 3.2, class: 'label-tip', fill: '#141311', style: 'font-size:8px; font-weight:600;' });
+    label.textContent = isP ? 'p+' : 'n';
+    g.appendChild(c);
+    g.appendChild(label);
+    nucleusGroup.appendChild(g);
+    makeInteractive(g, isP ? 'proton' : 'neutron', (isP ? 'Proton' : 'Neutron') + ' ' + (i+1) + ' of 12 nucleons');
+    nucleonEls.push({ el: g, base: nucleonBase[idx] });
+  });
+
+  // ---- Electron shells ----
+  const K_RADIUS = 110, L_RADIUS = 200;
+  const K_TILT_X = 0;
+  const L_TILT_X = 55 * Math.PI / 180;
+
+  const shellState = { K: 2, L: 4 };
+  const shellEls = { K: [], L: [] };
+  const shellSpeedFactor = { K: 1, L: 1 }; // eased multiplier, lerps toward hover target each frame
+  const shellHoverCount = { K: 0, L: 0 };  // >0 while pointer is over any electron in that shell
+
+  function buildShellEls(group, count, key){
+    group.innerHTML = '';
+    const arr = [];
+    for(let i=0;i<count;i++){
+      const g = el('g', { class: 'particle electron' });
+      const c = el('circle', { cx: 0, cy: 0, r: 6 });
+      g.appendChild(c);
+      group.appendChild(g);
+      makeInteractive(g, key === 'K' ? 'electronK' : 'electronL',
+        (key === 'K' ? 'K-shell' : 'L-shell') + ' electron ' + (i+1) + ' of ' + count);
+      g.addEventListener('pointerenter', () => { shellHoverCount[key]++; });
+      g.addEventListener('pointerleave', () => { shellHoverCount[key] = Math.max(0, shellHoverCount[key] - 1); });
+      arr.push({ el: g, angleOffset: (i/count) * Math.PI * 2 });
+    }
+    shellEls[key] = arr;
+  }
+  function rebuildElectrons(){
+    buildShellEls(shell1Group, shellState.K, 'K');
+    buildShellEls(shell2Group, shellState.L, 'L');
+  }
+  rebuildElectrons();
+
+  // ---- Orbit ring paths (drawn each frame, follow the current rotation) ----
+  function buildRingPoints(radius, tiltX, segments){
+    const pts = [];
+    for(let i=0;i<=segments;i++){
+      const a = (i/segments) * Math.PI * 2;
+      pts.push(rotX({ x: radius*Math.cos(a), y: radius*Math.sin(a), z: 0 }, tiltX));
+    }
+    return pts;
+  }
+  const kRingBase = buildRingPoints(K_RADIUS, K_TILT_X, 64);
+  const lRingBase = buildRingPoints(L_RADIUS, L_TILT_X, 64);
+
+  function updateRing(basePts, pathEl){
+    const d = basePts.map((p, i) => {
+      const proj = project(toView(p));
+      return (i === 0 ? 'M' : 'L') + proj.x.toFixed(1) + ',' + proj.y.toFixed(1);
+    }).join(' ') + ' Z';
+    pathEl.setAttribute('d', d);
+  }
+
+  // ---- Animation loop ----
+  let angleK = 0, angleL = 0;
+  let speedMultiplier = 1;
+  const baseSpeedK = (Math.PI*2) / 9;
+  const baseSpeedL = -(Math.PI*2) / 16;
+  let lastT = null;
+
+  function tick(t){
+    if(lastT == null) lastT = t;
+    const dt = (t - lastT) / 1000;
+    lastT = t;
+
+    // ease each shell's speed toward "slow" while any of its electrons is hovered, else back to normal
+    const targetK = shellHoverCount.K > 0 ? 0.05 : 1;
+    const targetL = shellHoverCount.L > 0 ? 0.05 : 1;
+    const ease = Math.min(1, dt * 6);
+    shellSpeedFactor.K += (targetK - shellSpeedFactor.K) * ease;
+    shellSpeedFactor.L += (targetL - shellSpeedFactor.L) * ease;
+
+    angleK += baseSpeedK * speedMultiplier * shellSpeedFactor.K * dt;
+    angleL += baseSpeedL * speedMultiplier * shellSpeedFactor.L * dt;
+
+    const renderList = [];
+
+    nucleonEls.forEach(n => {
+      renderList.push({ el: n.el, p: toView(n.base) });
     });
-    const electron = new THREE.Mesh(
-        geometry,
-        material
-    );
-    scene.add(electron);
-    electrons.push({
-        electron,
-        radius,
-        angle,
-        speed,
-        tilt
+    shellEls.K.forEach(e => {
+      const a = angleK + e.angleOffset;
+      const local = rotX({ x: K_RADIUS*Math.cos(a), y: K_RADIUS*Math.sin(a), z: 0 }, K_TILT_X);
+      renderList.push({ el: e.el, p: toView(local) });
     });
-}
-createElectron(3,0,.02,0);
-createElectron(3,Math.PI,.02,0);
-createElectron(5,0,.01,Math.PI/6);
-createElectron(5,Math.PI/2,.01,Math.PI/6);
-createElectron(5,Math.PI,.01,Math.PI/6);
-createElectron(5,3*Math.PI/2,.01,Math.PI/6);
-function animate(){
-    requestAnimationFrame(animate);
-    nucleus.rotation.y += .003;
-    electrons.forEach(e=>{
-        e.angle += e.speed;
-        const x = e.radius*Math.cos(e.angle);
-        const z = e.radius*Math.sin(e.angle);
-        const y = Math.sin(e.angle)
-        *Math.sin(e.tilt)
-        *e.radius;
-        e.electron.position.set(x,y,z);
+    shellEls.L.forEach(e => {
+      const a = angleL + e.angleOffset;
+      const local = rotX({ x: L_RADIUS*Math.cos(a), y: L_RADIUS*Math.sin(a), z: 0 }, L_TILT_X);
+      renderList.push({ el: e.el, p: toView(local) });
     });
-    controls.update();
-    renderer.render(scene,camera);
-}
-animate();
-window.addEventListener('resize',()=>{
-camera.aspect = window.innerWidth/window.innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(
-window.innerWidth,
-window.innerHeight
-);
-});
+
+    // painter's algorithm: draw farthest (largest z) first
+    renderList.sort((a, b) => b.p.z - a.p.z);
+    renderList.forEach(item => {
+      const proj = project(item.p);
+      item.el.setAttribute('transform', `translate(${proj.x.toFixed(1)},${proj.y.toFixed(1)}) scale(${proj.scale.toFixed(3)})`);
+      item.el.style.opacity = Math.max(0.35, Math.min(1, proj.scale)).toFixed(2);
+      // keep z-order visually correct among overlapping siblings within the same parent groups
+    });
+
+    updateRing(kRingBase, ringK);
+    updateRing(lRingBase, ringL);
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // ---- Ionization controls ----
+  function updateIonUI(){
+    const totalElectrons = shellState.K + shellState.L;
+    const charge = 6 - totalElectrons;
+    const sign = charge > 0 ? '+' : '';
+    chargeVal.textContent = charge === 0 ? '0' : (sign + charge);
+    let label;
+    if(charge === 0) label = 'neutral carbon atom';
+    else if(charge > 0) label = 'cation, C' + (charge===1?'':charge) + '+ · ' + charge + ' electron' + (charge>1?'s':'') + ' short';
+    else label = 'anion, C' + (Math.abs(charge)===1?'':Math.abs(charge)) + '− · ' + Math.abs(charge) + ' extra electron' + (Math.abs(charge)>1?'s':'');
+    chargeLabel.textContent = label;
+
+    removeBtn.disabled = shellState.L <= 0;
+    addBtn.disabled = shellState.L >= 8;
+
+    if(shellState.L === 4){
+      configStrip.innerHTML = '<span class="seg">1s<sup>2</sup></span><span class="divider">/</span><span class="seg">2s<sup>2</sup></span><span class="divider">/</span><span class="seg">2p<sup>2</sup></span>';
+    } else {
+      configStrip.innerHTML = '<span class="seg">K shell<sup>' + shellState.K + '</sup></span><span class="divider">/</span><span class="seg">L shell<sup>' + shellState.L + '</sup></span>';
+    }
+  }
+  removeBtn.addEventListener('click', () => {
+    if(shellState.L > 0){ shellState.L -= 1; rebuildElectrons(); updateIonUI(); }
+  });
+  addBtn.addEventListener('click', () => {
+    if(shellState.L < 8){ shellState.L += 1; rebuildElectrons(); updateIonUI(); }
+  });
+  resetBtn.addEventListener('click', () => {
+    shellState.L = 4; rebuildElectrons(); updateIonUI();
+  });
+  updateIonUI();
+
+  // ---- Speed controls ----
+  const chips = document.querySelectorAll('.chip[data-speed]');
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      speedMultiplier = parseFloat(chip.dataset.speed);
+    });
+  });
+
+  // ---- Drag to rotate in 3D (pitch + yaw, shift for roll) & scroll to zoom ----
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+
+  function pointerDown(e){
+    if(e.target.closest && e.target.closest('.particle')) return;
+    dragging = true;
+    svg.classList.add('dragging');
+    lastX = e.clientX; lastY = e.clientY;
+    svg.setPointerCapture(e.pointerId);
+  }
+  function pointerMove(e){
+    if(!dragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    if(e.shiftKey){
+      viewRot.z += dx * 0.008;
+    } else {
+      viewRot.y += dx * 0.008;
+      viewRot.x += dy * 0.008;
+    }
+  }
+  function pointerUp(){
+    dragging = false;
+    svg.classList.remove('dragging');
+  }
+  svg.addEventListener('pointerdown', pointerDown);
+  svg.addEventListener('pointermove', pointerMove);
+  svg.addEventListener('pointerup', pointerUp);
+  svg.addEventListener('pointerleave', pointerUp);
+})();

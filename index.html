@@ -3,9 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D visualisation of ccarbon atom</title>
+  <title>3D visualisation of carbon atom</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script type="importmap">
+    {
+      "imports":{
+        "three":"https://cdn.jsdelivr.net/npm/three@0.165/build/three.module.js",
+        "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
+  <div id="info">
+    <h1>carbon atom</h1>
+    <p>atomic number : 6</p>
+    <p>protons : 6</p>
+    <p>neutrons : 6</p>
+    <p>electrons : 6</p>
+  </div>
+
+  <script type="module" src="script.js"></script>
   
 </body>
 </html>

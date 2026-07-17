@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import{OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import { Const } from 'three/src/nodes/core/VarNode.js';
-const scene = new THREE.Color(0x000000);
+const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
     60,
     window.innerWidth/window.innerHeight,
@@ -92,3 +92,54 @@ function createShell(radius){
 }
 createShell(3);
 createShell(5);
+const electrons = [];
+function createElectron(radius,angle,speed,tilt){
+    const geometry = new THREE.SphereGeometry(.22,32,32);
+    const material = new THREE.MeshStandardMaterial({
+        color:0x00ff55,
+        emissive:0x00ff55,
+        emissiveIntensity:1
+    });
+    const electron = new THREE.Mesh(
+        geometry,
+        material
+    );
+    scene.add(electron);
+    electrons.push({
+        electron,
+        radius,
+        angle,
+        speed,
+        tilt
+    });
+}
+createElectron(3,0,.02,0);
+createElectron(3,Math.PI,.02,0);
+createElectron(5,0,.01,Math.PI/6);
+createElectron(5,Math.PI/2,.01,Math.PI/6);
+createElectron(5,Math.PI,.01,Math.PI/6);
+createElectron(5,3*Math.PI/2,.01,Math.PI/6);
+function animate(){
+    requestAnimationFrame(animate);
+    nucleus.rotation.y += .003;
+    electrons.forEach(e=>{
+        e.angle += e.speed;
+        const x = e.radius*Math.cos(e.angle);
+        const z = e.radius*Math.sin(e.angle);
+        const y = Math.sin(e.angle)
+        *Math.sin(e.tilt)
+        *e.radius;
+        e.electron.position.set(x,y,z);
+    });
+    controls.update();
+    renderer.render(scene,camera);
+}
+animate();
+window.addEventListener('resize',()=>{
+camera.aspect = window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+});

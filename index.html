@@ -9,3 +9,113 @@
 <link rel="stylesheet" href="carbon-atom.css">
 </head>
 <body>
+
+<header class="hero">
+  <div>
+    <p class="eyebrow">Element 06 · Nonmetal</p>
+    <h1 class="symbol-title">C<em>arbon</em></h1>
+    <p class="tagline">Four bonds, endless architectures — the one element that builds the rest of the periodic table's chemistry into life itself.</p>
+  </div>
+  <div class="stat-card">
+    <span class="big">12.011</span>
+    atomic mass (u)
+  </div>
+</header>
+
+<main>
+  <div class="stage">
+    <svg viewBox="0 0 600 600" id="atom-svg" role="img" aria-label="Interactive 3D Bohr model of a carbon atom. Drag to rotate it in three dimensions, hold shift while dragging to roll it, hover an electron to slow its shell down, and click any proton, neutron, or electron to learn about it.">
+      <path class="shell-ring" id="ring-k"></path>
+      <path class="shell-ring" id="ring-l"></path>
+      <g id="nucleus"></g>
+      <g id="shell-1"></g>
+      <g id="shell-2"></g>
+    </svg>
+  </div>
+  <p class="hint">drag to rotate in 3D · shift+drag to roll · hover an electron to slow its shell for an easier click · tab + enter also works</p>
+
+  <div class="info-panel" id="info-panel" aria-live="polite">
+    <h3 id="info-title">Nothing selected yet</h3>
+    <p id="info-desc">Click any proton, neutron, or electron above — or tab to one and press Enter — to read what it does.</p>
+  </div>
+
+  <div class="controls">
+    <button class="chip active" data-speed="1">Normal speed</button>
+    <button class="chip" data-speed="0.25">Slow motion</button>
+    <button class="chip" data-speed="3">Fast forward</button>
+  </div>
+
+  <div class="ion-panel">
+    <button class="ion-btn" id="remove-e" aria-label="Remove a valence electron">−</button>
+    <div class="charge-readout">
+      <span class="charge-val" id="charge-val">0</span>
+      <span id="charge-label">neutral carbon atom</span>
+    </div>
+    <button class="ion-btn" id="add-e" aria-label="Add a valence electron">+</button>
+    <button class="ion-reset" id="ion-reset">reset to neutral</button>
+  </div>
+
+  <div class="config-strip" id="config-strip">
+    <span class="seg">1s<sup>2</sup></span>
+    <span class="divider">/</span>
+    <span class="seg">2s<sup>2</sup></span>
+    <span class="divider">/</span>
+    <span class="seg">2p<sup>2</sup></span>
+  </div>
+
+  <div class="facts">
+    <div class="fact">
+      <span class="num">01</span>
+      <h3>Nucleus</h3>
+      <p>Six protons fix its identity as carbon; six neutrons in the most common isotope, carbon-12, bring the mass number to twelve.</p>
+    </div>
+    <div class="fact">
+      <span class="num">02</span>
+      <h3>Electron shells</h3>
+      <p>Two electrons fill the inner K shell. The remaining four sit in the outer L shell — never full, always ready to bond.</p>
+    </div>
+    <div class="fact">
+      <span class="num">03</span>
+      <h3>Valence</h3>
+      <p>Four outer electrons let carbon form up to four covalent bonds at once, the reason it can build chains, rings, and lattices.</p>
+    </div>
+    <div class="fact">
+      <span class="num">04</span>
+      <h3>Isotopes</h3>
+      <p>Carbon-14, with two extra neutrons, decays slowly and predictably — the basis for radiocarbon dating of ancient remains.</p>
+    </div>
+  </div>
+
+  <p class="forms-title">One element, several architectures</p>
+  <div class="forms">
+    <div class="form-card">
+      <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--diamond)" stroke-width="1.4"><polygon points="32,6 54,24 44,58 20,58 10,24"/><line x1="32" y1="6" x2="32" y2="58"/><line x1="10" y1="24" x2="54" y2="24"/><line x1="20" y1="58" x2="32" y2="24"/><line x1="44" y1="58" x2="32" y2="24"/></g></svg>
+      <h4>Diamond</h4>
+      <p>Every atom locked to four neighbours in a rigid 3D lattice — the hardest natural material.</p>
+    </div>
+    <div class="form-card">
+      <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--paper-dim)" stroke-width="1.2"><line x1="6" y1="20" x2="58" y2="20"/><line x1="6" y1="32" x2="58" y2="32"/><line x1="6" y1="44" x2="58" y2="44"/></g></svg>
+      <h4>Graphite</h4>
+      <p>Flat sheets of hexagons stacked loosely — layers slide past each other, which is why pencils write.</p>
+    </div>
+    <div class="form-card">
+      <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--electron)" stroke-width="1.4"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="14"/><line x1="10" y1="32" x2="54" y2="32"/><line x1="32" y1="10" x2="32" y2="54"/></g></svg>
+      <h4>Fullerene</h4>
+      <p>Sixty or more atoms curved into a hollow cage, like the panels of a soccer ball.</p>
+    </div>
+    <div class="form-card">
+      <svg class="glyph" viewBox="0 0 64 64"><g fill="none" stroke="var(--proton)" stroke-width="1.3"><circle cx="20" cy="24" r="4"/><circle cx="38" cy="18" r="3"/><circle cx="44" cy="38" r="4"/><circle cx="24" cy="44" r="3"/><line x1="20" y1="24" x2="38" y2="18"/><line x1="38" y1="18" x2="44" y2="38"/><line x1="44" y1="38" x2="24" y2="44"/><line x1="24" y1="44" x2="20" y2="24"/></g></svg>
+      <h4>Amorphous</h4>
+      <p>No long-range order at all — soot and charcoal, carbon atoms bonded in irregular clusters.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  3D Bohr model · not to scale · nucleus and shells are illustrative, not proportional
+</footer>
+
+<script src="carbon-atom.js"></script>
+
+</body>
+</html>

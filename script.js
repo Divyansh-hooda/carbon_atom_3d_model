@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import{OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import { Const } from 'three/src/nodes/core/VarNode.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
 const camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    1000
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
 );
 camera.position.set(0,6,18);
 const renderer = new THREE.WebGLRenderer({
@@ -18,12 +18,12 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 scene.add(new THREE.AmbientLight(0xffffff,1));
-const pointLight = new THREE.pointLight(0xffffff,3);
+const pointLight = new THREE.PointLight(0xffffff,3);
 pointLight.position.set(10,10,10);
 scene.add(pointLight);
 const starsGeometry = new THREE.BufferGeometry();
 const starVertices = [];
-for(let i = 0; i < 2500; i++){
+for(let i=0;i<2500;i++){
     starVertices.push(
         (Math.random()-0.5)*300,
         (Math.random()-0.5)*300,
@@ -31,21 +31,22 @@ for(let i = 0; i < 2500; i++){
     );
 }
 starsGeometry.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute(starVertices,3)
+'position',
+new THREE.Float32BufferAttribute(starVertices,3)
 );
 const stars = new THREE.Points(
-    starsGeometry,
-    new THREE.PointsMaterial({
-        color:0xffffff,
-        size:0.5
-    })
+starsGeometry,
+new THREE.PointsMaterial({
+    color:0xffffff,
+    size:0.5
+})
 );
 scene.add(stars);
 function particle(color){
     const geometry = new THREE.SphereGeometry(.38,32,32);
     const material = new THREE.MeshStandardMaterial({
         color,
+        emissive:color,
         emissiveIntensity:.3,
         metalness:.2,
         roughness:.3
@@ -53,14 +54,16 @@ function particle(color){
     return new THREE.Mesh(geometry,material);
 }
 const nucleus = new THREE.Group();
-for(let i=0;i<12;1++){
+for(let i=0;i<12;i++){
     const atom = i<6
     ? particle(0xff3333)
     : particle(0x3399ff);
     atom.position.set(
-        (Math.random()-5)*1.6,
-        (Math.random()-5)*1.6,
-        (Math.random()-5)*1.6
+
+        (Math.random()-.5)*1.6,
+        (Math.random()-.5)*1.6,
+        (Math.random()-.5)*1.6
+
     );
     nucleus.add(atom);
 }

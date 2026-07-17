@@ -13,3 +13,23 @@ body{
 canvas{
     display: block;
 }
+
+#info{
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    background: rgba(0,0,0,.55);
+    padding: 15px 20px;
+    border-radius: 12px;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+
+#info h1{
+    margin-bottom: 10px;
+}
+
+#info p{
+    margin:3px 0;
+}
